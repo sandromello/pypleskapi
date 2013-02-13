@@ -1,15 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-pleskapi.api
+pleskapi.base
 ~~~~~~~~~~~~
 
 This module contains the main built-ins for exercing the requests to the Plesk Panel endpoint.
 Note: For using OrderedDict in the requests, only with Python 2.7+ or install ordereddict from http://pypi.python.org.
 """
-import requests
-from converter import xml2elem, dict2xml, elem2xml, xml2dict, xml2json 
+import urllib2
+from converter import xml2elem, dict2xml, elem2xml, xml2dict, xml2json
 from xml.etree.ElementTree import Element as xmlobj
+import warnings
 
+odict = True
+try: import OrderedDict
+except ImportError: odict = False
+
+warnings.simplefilter('once')
 
 def build(packet, **kwargs):
     """ Build the :class:`BaseRequest <BaseRequest>`.
@@ -18,9 +24,9 @@ def build(packet, **kwargs):
     return BaseRequest(packet, **kwargs)
 
 def send_packet(packet, **kwargs):
-    """ Start a request to the Plesk Panel endpoint. 
+    """ Start a request to the Plesk Panel endpoint.
     Return a :class:`BaseResponse <BaseResponse>`.
-    :param **kwargs: Arguments that BaseRequest takes. 
+    :param **kwargs: Arguments that BaseRequest takes.
     """
     return BaseRequest(packet, **kwargs).send()
 
@@ -36,12 +42,14 @@ class StructDict(dict):
         return self.setdefault(key, StructDict(self.version))
 
     def dict(self):
+        warnings.warn("Missing OrderedDict package. Dict's are not ordered, elements SHOULD be in order or the request may fail.", ImportWarning)
         packet = { 'packet' : {} }
         packet['packet'].update(self)
         packet['packet'].update({ '@version' : self.version })
         return packet
 
     def xml(self):
+        warnings.warn("Missing OrderedDict package. Dict's are not ordered, elements SHOULD be in order or the request may fail.", ImportWarning)
         return dict2xml(self.dict())
 
 class BaseRequest(object):
@@ -61,8 +69,9 @@ class BaseRequest(object):
         self.port = port
 
         if isinstance(packet, dict):
+            warnings.warn("Missing OrderedDict package. Dict's are not ordered, elements SHOULD be in order or the request may fail.", ImportWarning)
             self.packetxml = dict2xml(packet)
-        elif isinstance(packet, xmlobj):
+        elif isinstance(packet, type(xmlobj)):
             self.packetxml = elem2xml(packet)
         elif isinstance(packet, str):
             self.packetxml = packet
@@ -81,20 +90,13 @@ class BaseRequest(object):
         return 'https://{0}:{1}/enterprise/control/agent.php'.format(self.server, self.port)
 
     def send(self):
-        """ Start the request to the Plesk Panel endpoint. Returns xml data. 
+        """ Start the request to the Plesk Panel endpoint. Returns xml data.
         Return a :class:`BaseResponse <BaseResponse>`. """
-        try:
-            response = requests.post(self.endpoint_uri,
-                                     data=self.packetxml,
-                                     headers=self.headers,
-                                     verify=False,
-                                     timeout=self.timeout)
-            if response.status_code == 500:
-                raise PleskApiError('Error requesting plesk api endpoint. Check server logs for more info.')
-            responsepacket = unicode(response.text.replace('\n', ''))
-            return BaseResponse(responsepacket)
-        #except SSLError, err: pass 
-        except requests.RequestException, err: print err
+        response = urllib2.urlopen(urllib2.Request(self.endpoint_uri, self.packetxml, self.headers), timeout=self.timeout)
+        if response.status_code == 500:
+            raise PleskApiError('Error requesting plesk api endpoint. Check server logs for more info.')
+        responsepacket = response.text.replace('\n', '').encode('utf-8')
+        return BaseResponse(responsepacket)
 
 class BaseResponse(object):
     def __init__(self, rpacket):
@@ -107,7 +109,7 @@ class BaseResponse(object):
     # TODO: Testar c/resposta retornando lista
     def response(self, bare=True):
         """ Extract the 'result' node containing only the status of the response.
-        :param bare: True returns everthing which is not a dict. False returns everthing. Default: True  
+        :param bare: True returns everthing which is not a dict. False returns everthing. Default: True
         """
         self._validate()
         result = self._extract_result(self.dict, bare)

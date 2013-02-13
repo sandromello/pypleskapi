@@ -1,6 +1,6 @@
 from distutils.core import setup
 
-setup(name='pypleskapi',
+setup(name='python-pleskapi',
       version='0.1',
       description='Make easy requests to Parallels Plesk Panel API',
       author='Sandro Mello',
@@ -8,5 +8,5 @@ setup(name='pypleskapi',
       url='https://github.com/sandromello/pypleskapi',
       packages=['pleskapi'],
       keywords='plesk api rpc',
-      package_dir={'': 'lib'}
+      package_dir={'pleskapi': 'lib/pleskapi'}
      )

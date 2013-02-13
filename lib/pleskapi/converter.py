@@ -32,7 +32,7 @@ except ImportError: import json as simplejson
 try: from collections import OrderedDict as odict
 except ImportError:
     try: import OrderedDict as odict
-    except ImportError: odict = dict()
+    except ImportError: odict = dict
 
 def elem_to_internal(elem, strip=1):
     """ Convert an Element into an internal dictionary (not JSON!). """
@@ -53,10 +53,10 @@ def elem_to_internal(elem, strip=1):
             d[tag] = [d[tag], value]
         except KeyError:
             d[tag] = value
-            
+
     text = elem.text
     tail = elem.tail
-    
+
     if strip:
         # ignore leading and trailing whitespace
         if text: text = text.strip()
@@ -71,7 +71,7 @@ def elem_to_internal(elem, strip=1):
     else:
         # text is the value if no attributes
         d = text or None
-        
+
     return {elem.tag: d}
 
 def internal_to_elem(pfsh, dictype):
@@ -145,9 +145,3 @@ def dict2xml(adict, dictype=odict):
 def elem2xml(elem):
     elem = minidom.parseString(ElementTree.tostring(elem, encoding='UTF-8'))
     return elem.toprettyxml(indent='', encoding='UTF-8').replace('\n', '')
-
-def order_nodes(packet, order):
-    for ord in order:
-        for key in packet:
-            packet[ord]
-    
