@@ -92,11 +92,14 @@ class BaseRequest(object):
     def send(self):
         """ Start the request to the Plesk Panel endpoint. Returns xml data.
         Return a :class:`BaseResponse <BaseResponse>`. """
-        response = urllib2.urlopen(urllib2.Request(self.endpoint_uri, self.packetxml, self.headers), timeout=self.timeout)
-        if response.status_code == 500:
-            raise PleskApiError('Error requesting plesk api endpoint. Check server logs for more info.')
-        responsepacket = response.text.replace('\n', '').encode('utf-8')
-        return BaseResponse(responsepacket)
+        try:
+            response = urllib2.urlopen(urllib2.Request(self.endpoint_uri, self.packetxml, self.headers), timeout=self.timeout)
+            responsepacket = response.read().strip().replace('\n', '').encode('utf-8')
+            return BaseResponse(responsepacket)
+        except urllib2.URLError, e:
+            if e.code == 500:
+                raise PleskApiError('Error requesting plesk api endpoint. Check server logs for more info.')
+            raise
 
 class BaseResponse(object):
     def __init__(self, rpacket):
