@@ -7,15 +7,14 @@ This module contains the main built-ins for exercing the requests to the Plesk P
 Note: For using OrderedDict in the requests, only with Python 2.7+ or install ordereddict from http://pypi.python.org.
 """
 import urllib2
-from converter import xml2elem, dict2xml, elem2xml, xml2dict, xml2json
+from converter import xml2elem, dict2xml, elem2xml, xml2dict, xml2json, odict
 from xml.etree.ElementTree import Element as xmlobj
 import warnings
 
-odict = True
-try: import OrderedDict
-except ImportError: odict = False
-
-warnings.simplefilter('once')
+if dict is odict:
+    warnings.simplefilter('once')
+else:
+    warnings.simplefilter('ignore')
 
 def build(packet, **kwargs):
     """ Build the :class:`BaseRequest <BaseRequest>`.
@@ -48,9 +47,9 @@ class StructDict(dict):
         packet['packet'].update({ '@version' : self.version })
         return packet
 
-    def xml(self):
+    def xml(self, prettify=False):
         warnings.warn("Missing OrderedDict package. Dict's are not ordered, elements SHOULD be in order or the request may fail.", ImportWarning)
-        return dict2xml(self.dict())
+        return dict2xml(self.dict(), prettify)
 
 class BaseRequest(object):
     def __init__(self, packet, server='localhost', port='8443',
@@ -96,9 +95,9 @@ class BaseRequest(object):
             response = urllib2.urlopen(urllib2.Request(self.endpoint_uri, self.packetxml, self.headers), timeout=self.timeout)
             responsepacket = response.read().strip().replace('\n', '').encode('utf-8')
             return BaseResponse(responsepacket)
-        except urllib2.URLError, e:
+        except urllib2.HTTPError, e:
             if e.code == 500:
-                raise PleskApiError('Error requesting plesk api endpoint. Check server logs for more info.')
+                raise PleskApiError('Error requesting Plesk Api endpoint. Check server logs form more info.')
             raise
 
 class BaseResponse(object):
