@@ -33,4 +33,5 @@ __author__ = 'Sandro Mello'
 __license__ = 'GPL'
 __copyright__ = 'Copyright 2013 Sandro Mello'
 
-from .base import build, send_packet
+from .base import build, send_packet, StructDict
+from .converter import odict
