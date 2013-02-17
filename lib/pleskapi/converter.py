@@ -133,13 +133,15 @@ def xml2dict(xmlstring, strip=1):
     elem = ET.fromstring(xmlstring)
     return elem2dict(elem, strip=strip)
 
-def dict2xml(adict, dictype=odict):
+def dict2xml(adict, prettify=False, dictype=odict):
     """ Convert a dict to an xml string with headers.
     :param adict: The specified dictonary to convert into an xml
     :param dictype: The type of the dictionary which will be used to construct the xml string (dict or OrderedDict). Default: OrderedDict (odict) 
     """
     elem = internal_to_elem(adict, dictype)
     elem = minidom.parseString(ElementTree.tostring(elem, encoding='UTF-8'))
+    if prettify:
+        return elem.toprettyxml(indent='  ', encoding='UTF-8')
     return elem.toprettyxml(indent='', encoding='UTF-8').replace('\n', '')
 
 def elem2xml(elem):
