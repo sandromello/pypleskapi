@@ -79,8 +79,7 @@ TODO
 
 Before starting this topic, I recommend the reading of [API RPC Manual](http://www.parallels.com/download/plesk/11/documentation/) for
 better understanding how it works.
-
-For building dict structures that will become valid requests to Plesk API RPC, you need to understand how a dict represents a xml structure.
+For building dict structures that will become valid requests to Plesk API RPC, you need to understand how a dict represents an XML structure.
 The conversion follow the example bellow:
 
 <pre>
@@ -96,7 +95,7 @@ XML                              JSON
 
 Reference: [Converting Between XML and JSON](http://www.xml.com/pub/a/2006/05/31/converting-between-xml-and-json.html)
 
-An easy way of understanding it's using the converter functions, you can convert from an XML structure to a python dict
+An easy way of understanding it's using the converter functions, you can convert from an XML structure to a python dict type
 
 	>>> from pleskapi import converter as conv
 	>>> xmlstr = '<?xml version="1.0" encoding="UTF-8"?><packet version="1.6.3.5"><webspace><get><filter/></get></webspace></packet>'
@@ -105,23 +104,21 @@ An easy way of understanding it's using the converter functions, you can convert
 
 ## Ordering Dict's
 
-Plesk RPC API needs that the XML structure follow a specific order, more info: [API RPC Manual](http://www.parallels.com/download/plesk/11/documentation/)
-API RPC > API RPC Packets > How to Create Packets
-
+Plesk RPC API needs that the XML structure follow a specific order, more info: [API RPC Manual](http://www.parallels.com/download/plesk/11/documentation/) - API RPC > API RPC Packets > How to Create Packets
 A python dict type is unordered, so you need to use an OrderedDict type for ordering only the necessary keys.
 Let's consider the XML string bellow:
 
-<?xml version="1.0" encoding="UTF-8"?>
-<packet version="1.6.3.5">
-  <ip>
-    <add>
-      <ip_address>192.0.2.18</ip_address>
-      <netmask>255.255.255.0</netmask>
-      <type>shared</type>
-      <interface>eth0</interface>
-    </add>
-  </ip>
-</packet>
+	<?xml version="1.0" encoding="UTF-8"?>
+	<packet version="1.6.3.5">
+	  <ip>
+	    <add>
+	      <ip_address>192.0.2.18</ip_address>
+	      <netmask>255.255.255.0</netmask>
+	      <type>shared</type>
+	      <interface>eth0</interface>
+	    </add>
+	  </ip>
+	</packet>
 
 ip_address node must be the first, netmask the second and so on.
 Building this structure without using OrderedDict, outputs to:
@@ -138,17 +135,17 @@ Building this structure without using OrderedDict, outputs to:
 
 The keys in 'add' are unordered, so the XML structure will be:
 
-<?xml version="1.0" encoding="UTF-8"?>
-<packet version="1.6.3.5">
-  <ip>
-    <add>
-      <interface>eth0</interface>
-      <type>shared</type>
-      <netmask>255.255.255.0</netmask>
-      <ip_address>192.0.2.18</ip_address>
-    </add>
-  </ip>
-</packet>
+	<?xml version="1.0" encoding="UTF-8"?>
+	<packet version="1.6.3.5">
+	  <ip>
+	    <add>
+	      <interface>eth0</interface>
+	      <type>shared</type>
+	      <netmask>255.255.255.0</netmask>
+	      <ip_address>192.0.2.18</ip_address>
+	    </add>
+	  </ip>
+	</packet>
 
 This packet will return an error because the nodes are not ordered as it should.
 Ordering then are an easy task, just need to use the proper type:
