@@ -35,7 +35,7 @@ except ImportError:
     except ImportError: odict = dict
 
 def elem_to_internal(elem, strip=1):
-    """ Convert an Element into an internal dictionary (not JSON!). """
+    """Convert an Element into an internal dictionary (not JSON!). """
     d = dict()
     for key, value in elem.attrib.items():
         d['@'+key] = value
@@ -75,8 +75,7 @@ def elem_to_internal(elem, strip=1):
     return {elem.tag: d}
 
 def internal_to_elem(pfsh, dictype):
-    """ Convert an internal dictionary (not JSON!) into an Element.
-    """
+    """Convert an internal dictionary (not JSON!) into an Element. """
     attribs = dictype()
     text = None
     tail = None
@@ -109,16 +108,17 @@ def internal_to_elem(pfsh, dictype):
     return e
 
 def elem2dict(elem, strip=1):
-    """ Convert an ElementTree or Element into a JSON string."""
+    """Convert an ElementTree or Element into a JSON string."""
     if hasattr(elem, 'getroot'):
         elem = elem.getroot()
     return elem_to_internal(elem, strip=strip)
 
 def xml2elem(xmlstr, strip=1):
+    """Convert an XML string to an element. """
     return ET.fromstring(xmlstr)
 
 def xml2json(xmlstring, strip=1):
-    """ Convert an XML string into a JSON string.
+    """Convert an XML string into a JSON string.
     :param xmlstring: The specified xml string to convert into a json string
     :param strip: Ignore leading and trailing whitespace. Default: 1 (ignore)
     """
@@ -126,7 +126,7 @@ def xml2json(xmlstring, strip=1):
     return simplejson.dumps(elem2dict(elem, strip=strip))
 
 def xml2dict(xmlstring, strip=1):
-    """ Convert an XML string into a dictionary.
+    """Convert an XML string into a dictionary.
     :param xmlstring: The specified xml string to convert into a dict
     :param strip: Ignore leading and trailing whitespace. Default: 1 (ignore)
     """
@@ -134,9 +134,10 @@ def xml2dict(xmlstring, strip=1):
     return elem2dict(elem, strip=strip)
 
 def dict2xml(adict, prettify=False, dictype=odict):
-    """ Convert a dict to an xml string with headers.
-    :param adict: The specified dictonary to convert into an xml
-    :param dictype: The type of the dictionary which will be used to construct the xml string (dict or OrderedDict). Default: OrderedDict (odict) 
+    """Convert a dict to an xml string with headers.
+    :param adict: The specified dictonary to convert into an XML
+    :para prettify: Indented XML. For debbuging proporse only.
+    :param dictype: The type of the dictionary which will be used to construct the xml string (dict or OrderedDict). Default: OrderedDict (odict)
     """
     elem = internal_to_elem(adict, dictype)
     elem = minidom.parseString(ElementTree.tostring(elem, encoding='UTF-8'))
@@ -145,5 +146,6 @@ def dict2xml(adict, prettify=False, dictype=odict):
     return elem.toprettyxml(indent='', encoding='UTF-8').replace('\n', '')
 
 def elem2xml(elem):
+    """Convert an element to an XML string. """
     elem = minidom.parseString(ElementTree.tostring(elem, encoding='UTF-8'))
     return elem.toprettyxml(indent='', encoding='UTF-8').replace('\n', '')

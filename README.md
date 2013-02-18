@@ -1,11 +1,11 @@
-# pypleskapi
+# Pypleskapi
 
-Easy requests to [Parallels Plesk Panel](http://www.parallels.com/products/plesk/)
+Easy requests to [Parallels Plesk Panel API RPC](http://www.parallels.com/products/plesk/)
 
 ## About
 Instead of building complex structures of XML, you can write all the requests in dict types.
-Pypleskapi converts all the response and requests into xml structures, you just need to know how to write
-the corresponding dict structure.
+Pypleskapi converts dict type packets into XML structures, and so as the other way around,
+you just need to know how to write the corresponding dict structure.
 
     >>> from pleskapi import StructDict
     >>> from pleskapi import send_packet
@@ -102,9 +102,18 @@ An easy way of understanding it's using the converter functions, you can convert
 	>>> conv.xml2dict(xmlstr)
 	{'packet': {'webspace': {'get': {'filter': None}}, '@version': '1.6.3.5'}}
 
+TODO: PleskApiError
+
+Use help bult-in for more info about the methods and classes.
+
+	>>> from pleskapi.base import BaseRequest, send_packet, BaseResponse
+	>>> help(BaseRequest)
+	>>> help(send_packet)
+	>>> help(BaseResponse)
+
 ## Ordering Dict's
 
-Plesk RPC API needs that the XML structure follow a specific order, more info: [API RPC Manual](http://www.parallels.com/download/plesk/11/documentation/) - API RPC > API RPC Packets > How to Create Packets
+Plesk RPC API needs that the XML structure follow a specific order, more info: [API RPC Manual](http://www.parallels.com/download/plesk/11/documentation/) - API RPC > API RPC Packets > How to Create Packets.
 A python dict type is unordered, so you need to use an OrderedDict type for ordering only the necessary keys.
 Let's consider the XML string bellow:
 

@@ -33,6 +33,22 @@ class PleskApiError(Exception): pass
 
 class StructDict(dict):
     def __init__(self, version):
+        """Helper class for building easy chain's of dict.
+        dict common creation:
+        >>> d = {}
+        >>> d['webspace'] = {}
+        >>> d['webspace']['get'] = {}
+        >>> d['webspace']['get']['filter'] = {'name' : 'domain.tld'}
+        >>> d
+        {'webspace': {'get': {'filter': {'name': 'domain.tld'}}}}
+
+        StructDict example:
+        >>> from pleskapi import StructDict
+        >>> sd = StructDict('1.6.3.5')
+        >>> sd['webspace']['get']['filter'] = {'name' : 'domain.tld'}
+        >>> sd
+        {'webspace': {'get': {'filter': {'name': 'domain.tld'}}}}
+        """
         self.version = version
 
     def __getitem__(self, key):
@@ -41,6 +57,7 @@ class StructDict(dict):
         return self.setdefault(key, StructDict(self.version))
 
     def dict(self):
+        """Return a dict with a packet header - <packet version="version">...</packet> """
         warnings.warn("Missing OrderedDict package. Dict's are not ordered, elements SHOULD be in order or the request may fail.", ImportWarning)
         packet = { 'packet' : {} }
         packet['packet'].update(self)
@@ -48,15 +65,15 @@ class StructDict(dict):
         return packet
 
     def xml(self, prettify=False):
+        """ Return the XML representation """
         warnings.warn("Missing OrderedDict package. Dict's are not ordered, elements SHOULD be in order or the request may fail.", ImportWarning)
         return dict2xml(self.dict(), prettify)
 
 class BaseRequest(object):
     def __init__(self, packet, server='localhost', port='8443',
                  user='admin', password='setup', key=None, timeout=240):
-        """
-        Represents the data that is going to be sent to the Plesk Panel endpoint.
-        :param packet: The packet for sending to the Plesk Panel endpoint. Should be only in three formats: dict, OrderedDict or xml string (without headers).
+        """Represents the data that is going to be sent to the Plesk Panel endpoint.
+        :param packet: The packet for sending to the Plesk Panel endpoint. Allowed values: dict, xml.etree.ElementTree.Element or an XML string (without headers).
         :param server: The server IP Address or uri. Default: localhost.
         :param port: The port of the Plesk Panel. Default: 8443.
         :param user: The credentials of the Plesk Panel. Default: admin.
@@ -75,7 +92,7 @@ class BaseRequest(object):
         elif isinstance(packet, str):
             self.packetxml = packet
         else:
-            raise TypeError('Unrecognized packet type.')
+            raise TypeError('Unrecognized packet type: %s' %type(packet))
         if key:
             self.headers = { 'KEY': key }
         else:
@@ -85,11 +102,11 @@ class BaseRequest(object):
 
     @property
     def endpoint_uri(self):
-        """ The Plesk Panel endpoint api constructed. """
+        """The Plesk Panel endpoint API constructed. """
         return 'https://{0}:{1}/enterprise/control/agent.php'.format(self.server, self.port)
 
     def send(self):
-        """ Start the request to the Plesk Panel endpoint. Returns xml data.
+        """Start the request to the Plesk Panel endpoint. Returns XML data.
         Return a :class:`BaseResponse <BaseResponse>`. """
         try:
             response = urllib2.urlopen(urllib2.Request(self.endpoint_uri, self.packetxml, self.headers), timeout=self.timeout)
@@ -102,15 +119,15 @@ class BaseRequest(object):
 
 class BaseResponse(object):
     def __init__(self, rpacket):
-        """ Represents the response data returned from the Plesk Panel api.
-        :param rpacket: The xml packet response from the Plesk Panel api.
+        """Represents the response data returned from the Plesk Panel API.
+        :param rpacket: The XML packet response from the Plesk Panel API.
         """
         self._rpacket = rpacket
         self._dict = self.todict()
 
     # TODO: Testar c/resposta retornando lista
     def response(self, bare=True):
-        """ Extract the 'result' node containing only the status of the response.
+        """Extract the 'result' node containing only the status of the response.
         :param bare: True returns everthing which is not a dict. False returns everthing. Default: True
         """
         self._validate()
@@ -164,18 +181,18 @@ class BaseResponse(object):
         return ext
 
     def element(self):
-        """ The response data as xml.etree.ElementTree.Element. """
+        """The response data as xml.etree.ElementTree.Element. """
         return xml2elem(self._rpacket)
 
     def json(self):
-        """ The response data as json. """
+        """The response data as json. """
         return xml2json(self._rpacket)
 
     def todict(self):
-        """ Convert to dict. """
+        """Convert to dict. """
         return xml2dict(self._rpacket)
 
     @property
     def dict(self):
-        """ The response data as dict. """
+        """The response data as dict. """
         return self._dict
