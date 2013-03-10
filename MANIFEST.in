@@ -1,0 +1,4 @@
+include README.rst LICENSE HISTORY.rst
+global-exclude *pyc
+global-exclude *pyo
+global-exclude test

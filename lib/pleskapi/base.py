@@ -110,7 +110,8 @@ class BaseRequest(object):
         Return a :class:`BaseResponse <BaseResponse>`. """
         try:
             response = urllib2.urlopen(urllib2.Request(self.endpoint_uri, self.packetxml, self.headers), timeout=self.timeout)
-            responsepacket = response.read().strip().replace('\n', '').encode('utf-8')
+            responsepacket = unicode(response.read().replace('\n', ''), 'utf-8')
+            responsepacket = responsepacket.encode('utf-8')
             return BaseResponse(responsepacket)
         except urllib2.HTTPError, e:
             if e.code == 500:

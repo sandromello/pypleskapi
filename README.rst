@@ -1,11 +1,15 @@
-# Pypleskapi
+Pypleskapi
+==========
 
-Easy requests to [Parallels Plesk Panel API RPC](http://www.parallels.com/products/plesk/)
+Easy requests to `Parallels Plesk Panel API RPC <http://www.parallels.com/products/plesk/>`_.
 
-## About
+About
+-----
 Instead of building complex structures of XML, you can write all the requests in dict types.
 Pypleskapi converts dict type packets into XML structures, and so as the other way around,
 you just need to know how to write the corresponding dict structure.
+
+.. code-block:: pycon
 
     >>> from pleskapi import StructDict
     >>> from pleskapi import send_packet
@@ -13,36 +17,40 @@ you just need to know how to write the corresponding dict structure.
     >>> packet = StructDict('1.6.3.5')
     >>> packet['webspace']['get']['filter'] = {'name' : 'domain.tld'}
     >>> packet['webspace']['get']['dataset']['gen_info']
-	
-	>>> print packet.dict()
-	{'packet': {'webspace': {'get': {'filter': {'name': 'domain.tld'}, 'dataset': {'gen_info': {}}}}, '@version': '1.6.3.5'}}
 
-	>>> print packet.xml(True)
-	<?xml version="1.0" encoding="UTF-8"?>
-	<packet version="1.6.3.5">
-	  <webspace>
-	    <get>
-    	  <filter>
-	        <name>domain.tld</name>
-	      </filter>
-	      <dataset>
-	        <gen_info/>
-	      </dataset>
-	    </get>
-	  </webspace>
-	</packet>
+    >>> print packet.dict()
+    {'packet': {'webspace': {'get': {'filter': {'name': 'domain.tld'}, 'dataset': {'gen_info': {}}}}, '@version': '1.6.3.5'}}
+
+    >>> print packet.xml(True)
+    <?xml version="1.0" encoding="UTF-8"?>
+    <packet version="1.6.3.5">
+      <webspace>
+        <get>
+          <filter>
+            <name>domain.tld</name>
+          </filter>
+          <dataset>
+            <gen_info/>
+          </dataset>
+        </get>
+      </webspace>
+    </packet>
 
     >>> r = send_packet(packet.dict())
     >>> r.response()
     {'version': '1.6.3.5', 'result': {'status': 'ok', 'filter-id': 'domain.tld', 'id': '36'}}
-
-StructDict builds chain's of dict without expliciting, common dict's are build this way:
 	
+StructDict builds chain's of dict without expliciting, common dict's are build this way:
+
+.. code-block:: pycon
+
 	>>> d = dict() or {}
 	>>> d['webspace'] = {}
 	{'webspace': {}}
 
 You need to create a new dict for every key:
+
+.. code-block:: pycon
 
 	>>> d['webspace'] = {}
 	>>> d['webspace']['get'] = {}
@@ -53,7 +61,9 @@ You need to create a new dict for every key:
 	KeyError: 'get'
 
 With StructDict you can build chain's of dict:
-	
+
+.. code-block:: pycon
+
 	>>> from pleskapi import StructDict
 	""" 1.6.3.5 refer to  packet header body - <packet version="1.6.3.5">...</packet> """
 	>>> sd = StructDict('1.6.3.5')
@@ -64,58 +74,72 @@ With StructDict you can build chain's of dict:
 	>>> print sd.xml()
 	<?xml version="1.0" encoding="UTF-8"?><packet version="1.6.3.5"><webspace><get><filter/></get></webspace></packet>
 
-Reference: [Plesk Api](http://download1.parallels.com/Plesk/PP11/11.0/Doc/en-US/online/plesk-api-rpc/33899.htm)
-The conversion are based in [Hay's project](http://github.com/hay/xml2json)
+Reference: `Plesk API <http://download1.parallels.com/Plesk/PP11/11.0/Doc/en-US/online/plesk-api-rpc/33899.htm>`_.
+The conversion is based in `Hay's project <http://github.com/hay/xml2json>`_.
 
-## Installation
+Installation
+------------
 
-TODO
+The following command will install pleskapi into your Python modules library:
 
-## Prerequisites
+.. code-block:: bash
 
-TODO
+    $ python setup.py install
 
-## Overview
+This command will generally need to be run with an administrative level account.
 
-Before starting this topic, I recommend the reading of [API RPC Manual](http://www.parallels.com/download/plesk/11/documentation/) for
+Or:
+
+.. code-block:: bash
+
+    $ pip install pypleskapi
+
+Pre-requisites
+--------------
+
+If you want to build ordered dict's, you MUST have python2.7+ or `OrderedDict <https://pypi.python.org/pypi/ordereddict>`_.
+
+Overview
+--------
+
+Before starting this topic, I recommend the reading of `API RPC Manual <http://www.parallels.com/download/plesk/11/documentation/>` for
 better understanding how it works.
 For building dict structures that will become valid requests to Plesk API RPC, you need to understand how a dict represents an XML structure.
 The conversion follow the example bellow:
 
-<pre>
-XML                              JSON
-&lt;e/&gt;                             "e": null
-&lt;e&gt;text&lt;/e&gt;                      "e": "text"
-&lt;e name="value" /&gt;               "e": { "@name": "value" }
-&lt;e name="value"&gt;text&lt;/e&gt;         "e": { "@name": "value", "#text": "text" }
-&lt;e&gt; &lt;a&gt;text&lt;/a &gt;&lt;b&gt;text&lt;/b&gt; &lt;/e&gt; "e": { "a": "text", "b": "text" }
-&lt;e&gt; &lt;a&gt;text&lt;/a&gt; &lt;a&gt;text&lt;/a&gt; &lt;/e&gt; "e": { "a": ["text", "text"] }
-&lt;e&gt; text &lt;a&gt;text&lt;/a&gt; &lt;/e&gt;        "e": { "#text": "text", "a": "text" }
-</pre>
+.. code-block:: xml
 
-Reference: [Converting Between XML and JSON](http://www.xml.com/pub/a/2006/05/31/converting-between-xml-and-json.html)
+    XML                              JSON
+    <e/>                             "e": null
+    <e>text</e>                      "e": "text"
+    <e name="value" />               "e": { "@name": "value" }
+    <e name="value">text</e>         "e": { "@name": "value", "#text": "text" }
+    <e> <a>text</a ><b>text</b> </e> "e": { "a": "text", "b": "text" }
+    <e> <a>text</a> <a>text</a> </e> "e": { "a": ["text", "text"] }
+    <e> text <a>text</a> </e>        "e": { "#text": "text", "a": "text" }
+
+Reference: `Converting Between XML and JSON <http://www.xml.com/pub/a/2006/05/31/converting-between-xml-and-json.html>`_.
 
 An easy way of understanding it's using the converter functions, you can convert from an XML structure to a python dict type
+
+.. code-block:: pycon
 
 	>>> from pleskapi import converter as conv
 	>>> xmlstr = '<?xml version="1.0" encoding="UTF-8"?><packet version="1.6.3.5"><webspace><get><filter/></get></webspace></packet>'
 	>>> conv.xml2dict(xmlstr)
 	{'packet': {'webspace': {'get': {'filter': None}}, '@version': '1.6.3.5'}}
 
-TODO: PleskApiError
+Ordering Dict's
+---------------
 
-Use help bult-in for more info about the methods and classes.
+Plesk RPC API needs that the XML structure follow a specific order, more info: `API RPC Manual`_ - API RPC > API RPC Packets > How to Create Packets.
 
-	>>> from pleskapi.base import BaseRequest, send_packet, BaseResponse
-	>>> help(BaseRequest)
-	>>> help(send_packet)
-	>>> help(BaseResponse)
+.. _`API RPC Manual`: http://www.parallels.com/download/plesk/11/documentation/
 
-## Ordering Dict's
-
-Plesk RPC API needs that the XML structure follow a specific order, more info: [API RPC Manual](http://www.parallels.com/download/plesk/11/documentation/) - API RPC > API RPC Packets > How to Create Packets.
 A python dict type is unordered, so you need to use an OrderedDict type for ordering only the necessary keys.
 Let's consider the XML string bellow:
+
+.. code-block:: xml
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<packet version="1.6.3.5">
@@ -131,9 +155,11 @@ Let's consider the XML string bellow:
 
 ip_address node must be the first, netmask the second and so on.
 Building this structure without using OrderedDict, outputs to:
-	
+
+.. code-block:: pycon
+
 	>>> from pleskapi import StructDict as sd
-	
+
 	>>> sd['ip']['add'] = {}
 	>>> sd['ip']['add']['ip_address'] = '192.0.2.18'
 	>>> sd['ip']['add']['netmask'] = '255.255.255.0'
@@ -143,6 +169,8 @@ Building this structure without using OrderedDict, outputs to:
 	{'ip': {'add': {'interface': 'eth0', 'type': 'shared', 'netmask': '255.255.255.0', 'ip_address': '192.0.2.18'}}}
 
 The keys in 'add' are unordered, so the XML structure will be:
+
+.. code-block:: xml
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<packet version="1.6.3.5">
@@ -159,6 +187,8 @@ The keys in 'add' are unordered, so the XML structure will be:
 This packet will return an error because the nodes are not ordered as it should.
 Ordering then are an easy task, just need to use the proper type:
 
+.. code-block:: pycon
+
 	>>> from pleskapi import StructDict as sd
 	>>> from pleskapi import odict
 
@@ -170,7 +200,5 @@ Ordering then are an easy task, just need to use the proper type:
 	>>> sd.dict()
 	{'ip': {'add': OrderedDict([('ip_address', '192.0.2.18'), ('netmask', '255.255.255.0'), ('type', 'shared'), ('interface', 'eth0')])}}
 
+`More examples <https://github.com/sandromello/pypleskapi/tree/master/docs>`_
 
-## More examples - Basic to Complex
-
-TODO

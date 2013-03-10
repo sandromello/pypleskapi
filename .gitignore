@@ -1,5 +1,8 @@
 *.swp
 *.pyc
 *.xml
-*.pydevproject
-*.settings
+build
+debian
+test
+dist
+MANIFEST
